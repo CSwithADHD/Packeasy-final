@@ -62,13 +62,17 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   logoWrap: {
-    ...StyleSheet.absoluteFillObject,
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 220,
     alignItems: "center",
     justifyContent: "center",
   },
   logo: {
-    width: 360,
-    height: 140,
+    width: 320,
+    height: 120,
   },
   bottom: {
     paddingHorizontal: 24,
