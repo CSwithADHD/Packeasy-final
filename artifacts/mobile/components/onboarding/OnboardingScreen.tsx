@@ -18,6 +18,7 @@ export const ONBOARDING_TEAL_DARK = "#0F8AA3";
 type Props = {
   image: ImageSourcePropType;
   title: string;
+  subtitle?: string;
   step: 1 | 2 | 3;
   nextHref: string;
   skipHref: string;
@@ -26,6 +27,7 @@ type Props = {
 export function OnboardingScreen({
   image,
   title,
+  subtitle,
   step,
   nextHref,
   skipHref,
@@ -54,7 +56,10 @@ export function OnboardingScreen({
       </View>
 
       <View style={[styles.sheet, { paddingBottom: insets.bottom + 24 }]}>
-        <Text style={styles.title}>{title}</Text>
+        <View style={styles.textBlock}>
+          <Text style={styles.title}>{title}</Text>
+          {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+        </View>
 
         <View style={styles.actionsRow}>
           <Pressable
@@ -125,12 +130,23 @@ const styles = StyleSheet.create({
     paddingTop: 32,
     gap: 36,
   },
+  textBlock: {
+    gap: 10,
+  },
   title: {
     color: ONBOARDING_TEAL,
     fontFamily: "Inter_700Bold",
     fontSize: 22,
     textAlign: "center",
     letterSpacing: 0.2,
+  },
+  subtitle: {
+    color: "#6B6B6B",
+    fontFamily: "Inter_400Regular",
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: "center",
+    paddingHorizontal: 8,
   },
   actionsRow: {
     flexDirection: "row",
