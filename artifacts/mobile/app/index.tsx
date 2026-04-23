@@ -28,7 +28,7 @@ export default function WelcomeScreen() {
           style={StyleSheet.absoluteFill}
         />
 
-        <View style={styles.logoWrap} pointerEvents="none">
+        <View style={[styles.logoWrap, { paddingTop: insets.top + 24 }]}>
           <Image
             source={require("../assets/images/logo.png")}
             style={styles.logo}
@@ -62,17 +62,12 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   logoWrap: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 220,
+    paddingHorizontal: 24,
     alignItems: "center",
-    justifyContent: "center",
   },
   logo: {
     width: 320,
-    height: 120,
+    height: 96,
   },
   bottom: {
     paddingHorizontal: 24,
