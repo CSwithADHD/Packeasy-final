@@ -59,7 +59,7 @@ export default function SignupScreen() {
       />
 
       <Pressable
-        onPress={() => router.replace("/")}
+        onPress={() => router.replace("/(tabs)")}
         style={({ pressed }) => [
           styles.primaryBtn,
           pressed && { opacity: 0.9, transform: [{ scale: 0.99 }] },
