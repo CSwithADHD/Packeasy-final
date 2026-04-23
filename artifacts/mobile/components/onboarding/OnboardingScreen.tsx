@@ -21,7 +21,8 @@ type Props = {
   subtitle?: string;
   step: 1 | 2 | 3;
   nextHref: string;
-  skipHref: string;
+  skipHref?: string;
+  ctaLabel?: string;
 };
 
 export function OnboardingScreen({
@@ -31,6 +32,7 @@ export function OnboardingScreen({
   step,
   nextHref,
   skipHref,
+  ctaLabel,
 }: Props) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -61,27 +63,41 @@ export function OnboardingScreen({
           {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
         </View>
 
-        <View style={styles.actionsRow}>
-          <Pressable
-            onPress={() => router.replace(skipHref as never)}
-            style={({ pressed }) => [
-              styles.skipBtn,
-              pressed && { opacity: 0.7 },
-            ]}
-          >
-            <Text style={styles.skipText}>Skip</Text>
-          </Pressable>
-
+        {ctaLabel ? (
           <Pressable
             onPress={() => router.push(nextHref as never)}
             style={({ pressed }) => [
-              styles.nextBtn,
-              pressed && { opacity: 0.85, transform: [{ scale: 0.97 }] },
+              styles.ctaBtn,
+              pressed && { opacity: 0.9, transform: [{ scale: 0.98 }] },
             ]}
           >
-            <Feather name="chevron-right" size={26} color="#ffffff" />
+            <Text style={styles.ctaText}>{ctaLabel}</Text>
           </Pressable>
-        </View>
+        ) : (
+          <View style={styles.actionsRow}>
+            <Pressable
+              onPress={() =>
+                skipHref ? router.replace(skipHref as never) : null
+              }
+              style={({ pressed }) => [
+                styles.skipBtn,
+                pressed && { opacity: 0.7 },
+              ]}
+            >
+              <Text style={styles.skipText}>Skip</Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() => router.push(nextHref as never)}
+              style={({ pressed }) => [
+                styles.nextBtn,
+                pressed && { opacity: 0.85, transform: [{ scale: 0.97 }] },
+              ]}
+            >
+              <Feather name="chevron-right" size={26} color="#ffffff" />
+            </Pressable>
+          </View>
+        )}
       </View>
     </View>
   );
@@ -171,5 +187,21 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
+  },
+  ctaBtn: {
+    backgroundColor: ONBOARDING_TEAL,
+    height: 52,
+    borderRadius: 32,
+    alignSelf: "center",
+    paddingHorizontal: 56,
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: 220,
+  },
+  ctaText: {
+    color: "#ffffff",
+    fontFamily: "Inter_600SemiBold",
+    fontSize: 16,
+    letterSpacing: 0.2,
   },
 });
