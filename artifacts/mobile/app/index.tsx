@@ -1,4 +1,5 @@
 import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
 import {
@@ -13,6 +14,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function WelcomeScreen() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
 
   return (
     <View style={styles.root}>
@@ -39,6 +41,7 @@ export default function WelcomeScreen() {
         <View style={[styles.bottom, { paddingBottom: insets.bottom + 24 }]}>
           <Text style={styles.headline}>Travel Light{"\n"}Pack Easy!</Text>
           <Pressable
+            onPress={() => router.push("/onboarding")}
             style={({ pressed }) => [
               styles.button,
               pressed && styles.buttonPressed,
