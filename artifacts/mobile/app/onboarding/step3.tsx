@@ -9,7 +9,7 @@ export default function OnboardingStep3() {
       image={require("../../assets/images/character-3.png")}
       title="Start Your Journey Now!"
       ctaLabel="Let's Explore"
-      nextHref="/"
+      nextHref="/login"
     />
   );
 }
