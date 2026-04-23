@@ -116,8 +116,8 @@ const styles = StyleSheet.create({
     paddingTop: 24,
   },
   illustration: {
-    width: "100%",
-    height: "100%",
+    width: "78%",
+    height: "78%",
   },
   dotsRow: {
     flexDirection: "row",
