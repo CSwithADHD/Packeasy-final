@@ -1,10 +1,17 @@
 import { FontAwesome, FontAwesome5, Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 
 type Props = {
   label: string;
 };
+
+function notifyComingSoon(provider: string) {
+  Alert.alert(
+    `${provider} sign-in coming soon`,
+    "For now, please sign up with your email and password.",
+  );
+}
 
 export function SocialRow({ label }: Props) {
   return (
@@ -15,23 +22,31 @@ export function SocialRow({ label }: Props) {
         <View style={styles.line} />
       </View>
       <View style={styles.row}>
-        <SocialBtn>
+        <SocialBtn onPress={() => notifyComingSoon("Google")}>
           <FontAwesome name="google" size={22} color="#ffffff" />
         </SocialBtn>
-        <SocialBtn>
+        <SocialBtn onPress={() => notifyComingSoon("Apple")}>
           <Ionicons name="logo-apple" size={24} color="#ffffff" />
         </SocialBtn>
-        <SocialBtn>
+        <SocialBtn onPress={() => notifyComingSoon("Facebook")}>
           <FontAwesome5 name="facebook-f" size={22} color="#ffffff" />
         </SocialBtn>
       </View>
+      <Text style={styles.note}>Social sign-in is coming soon</Text>
     </View>
   );
 }
 
-function SocialBtn({ children }: { children: React.ReactNode }) {
+function SocialBtn({
+  children,
+  onPress,
+}: {
+  children: React.ReactNode;
+  onPress: () => void;
+}) {
   return (
     <Pressable
+      onPress={onPress}
       style={({ pressed }) => [styles.btn, pressed && { opacity: 0.7 }]}
     >
       {children}
@@ -41,7 +56,7 @@ function SocialBtn({ children }: { children: React.ReactNode }) {
 
 const styles = StyleSheet.create({
   wrap: {
-    gap: 16,
+    gap: 12,
   },
   dividerRow: {
     flexDirection: "row",
@@ -70,5 +85,11 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.18)",
     alignItems: "center",
     justifyContent: "center",
+  },
+  note: {
+    color: "rgba(255,255,255,0.7)",
+    fontFamily: "Inter_400Regular",
+    fontSize: 12,
+    textAlign: "center",
   },
 });
