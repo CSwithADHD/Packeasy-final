@@ -1,16 +1,41 @@
 import { Link, useRouter } from "expo-router";
 import React, { useState } from "react";
-import { Pressable, StyleSheet, Switch, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, Switch, Text, View } from "react-native";
 
 import { AuthInput } from "@/components/auth/AuthInput";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { SocialRow } from "@/components/auth/SocialRow";
+import { useAuth } from "@/context/AuthContext";
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [remember, setRemember] = useState(false);
+  const [remember, setRemember] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const onSubmit = async () => {
+    if (submitting) return;
+    setError(null);
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail || !password) {
+      setError("Please enter your email and password.");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await login({ email: trimmedEmail, password });
+      router.replace("/(tabs)");
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Login failed. Please try again.";
+      setError(extractMessage(message));
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <AuthShell
@@ -19,7 +44,7 @@ export default function LoginScreen() {
         <>
           <SocialRow label="Or login with" />
           <Text style={styles.bottomText}>
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link href="/(auth)/signup" style={styles.bottomLink}>
               Signup
             </Link>
@@ -59,17 +84,29 @@ export default function LoginScreen() {
         </Pressable>
       </View>
 
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
       <Pressable
-        onPress={() => router.replace("/(tabs)")}
+        onPress={onSubmit}
+        disabled={submitting}
         style={({ pressed }) => [
           styles.primaryBtn,
-          pressed && { opacity: 0.9, transform: [{ scale: 0.99 }] },
+          (pressed || submitting) && { opacity: 0.85 },
         ]}
       >
-        <Text style={styles.primaryText}>Login</Text>
+        {submitting ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.primaryText}>Login</Text>
+        )}
       </Pressable>
     </AuthShell>
   );
+}
+
+function extractMessage(raw: string): string {
+  const m = raw.match(/HTTP \d+[^:]*:\s*(.+)$/);
+  return m ? m[1] : raw;
 }
 
 const styles = StyleSheet.create({
@@ -93,6 +130,12 @@ const styles = StyleSheet.create({
     color: "rgba(255,255,255,0.85)",
     fontFamily: "Inter_500Medium",
     fontSize: 13,
+  },
+  errorText: {
+    color: "#ffb4b4",
+    fontFamily: "Inter_500Medium",
+    fontSize: 13,
+    textAlign: "center",
   },
   primaryBtn: {
     backgroundColor: "#22c46a",

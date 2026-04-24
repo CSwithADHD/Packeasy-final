@@ -1,6 +1,7 @@
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
+import { Alert } from "react-native";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -38,15 +39,26 @@ export default function NewTripScreen() {
 
   const canStart = (selected?.name?.length ?? 0) > 0 || query.trim().length > 1;
 
-  const handleStart = () => {
+  const [submitting, setSubmitting] = useState(false);
+  const handleStart = async () => {
     const dest = selected?.name ?? query.trim();
-    if (!dest) return;
-    createTrip({
-      destination: dest,
-      country: selected?.country,
-      emoji: selected?.emoji,
-    });
-    router.replace("/smart-list");
+    if (!dest || submitting) return;
+    setSubmitting(true);
+    try {
+      await createTrip({
+        destination: dest,
+        country: selected?.country,
+        emoji: selected?.emoji,
+      });
+      router.replace("/smart-list");
+    } catch (err) {
+      Alert.alert(
+        "Couldn't create trip",
+        err instanceof Error ? err.message : "Please try again.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -128,9 +140,9 @@ export default function NewTripScreen() {
 
         <View style={[styles.footer, { paddingBottom: insets.bottom + 16 }]}>
           <PrimaryButton
-            label="Start Packing"
+            label={submitting ? "Creating..." : "Start Packing"}
             onPress={handleStart}
-            disabled={!canStart}
+            disabled={!canStart || submitting}
           />
           <PrimaryButton
             label="Join a shared trip"

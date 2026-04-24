@@ -75,7 +75,11 @@ export function ChecklistTab({ trip }: { trip: Trip }) {
               onPress={() => toggleOpen(cat.id)}
               style={styles.categoryHeader}
             >
-              <Feather name={cat.icon} size={18} color={palette.primary} />
+              <Feather
+                name={cat.icon as keyof typeof Feather.glyphMap}
+                size={18}
+                color={palette.primary}
+              />
               <Text style={styles.categoryName}>{cat.name}</Text>
               <View style={styles.countPill}>
                 <Text style={styles.countPillText}>

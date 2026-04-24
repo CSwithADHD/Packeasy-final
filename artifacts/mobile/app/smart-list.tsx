@@ -1,29 +1,43 @@
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import React, { useState } from "react";
+import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
-import { buildDefaultCategories } from "@/constants/checklist";
 import { palette } from "@/constants/colors";
 import { useTrips } from "@/context/TripContext";
 
 export default function SmartListModal() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { currentTrip, trips } = useTrips();
+  const { currentTrip, trips, seedCurrentTrip, setCurrentTrip } = useTrips();
+  const [busy, setBusy] = useState(false);
 
   const trip = currentTrip ?? trips[trips.length - 1];
 
-  const goToTrip = () => router.replace("/(tabs)/trip");
+  const goToTrip = () => {
+    if (trip && !currentTrip) setCurrentTrip(trip.id);
+    router.replace("/(tabs)/trip");
+  };
 
-  const handleSmart = () => {
-    if (!trip) return goToTrip();
-    if (trip.categories.length === 0) {
-      trip.categories.push(...buildDefaultCategories());
+  const handleSmart = async () => {
+    if (!trip || busy) return goToTrip();
+    setBusy(true);
+    try {
+      if (!currentTrip) setCurrentTrip(trip.id);
+      if (trip.categories.length === 0) {
+        await seedCurrentTrip();
+      }
+      goToTrip();
+    } catch (err) {
+      Alert.alert(
+        "Couldn't build list",
+        err instanceof Error ? err.message : "Please try again.",
+      );
+    } finally {
+      setBusy(false);
     }
-    goToTrip();
   };
 
   const handleScratch = () => {
@@ -56,9 +70,16 @@ export default function SmartListModal() {
         </Text>
 
         <PrimaryButton
-          label="Build My Smart List"
+          label={busy ? "Building..." : "Build My Smart List"}
           onPress={handleSmart}
-          icon={<Feather name="zap" size={16} color="#fff" />}
+          disabled={busy}
+          icon={
+            busy ? (
+              <ActivityIndicator color="#fff" size="small" />
+            ) : (
+              <Feather name="zap" size={16} color="#fff" />
+            )
+          }
         />
 
         <View style={styles.orRow}>
@@ -71,6 +92,7 @@ export default function SmartListModal() {
           label="Start from scratch"
           variant="outline"
           onPress={handleScratch}
+          disabled={busy}
         />
       </Pressable>
     </Pressable>

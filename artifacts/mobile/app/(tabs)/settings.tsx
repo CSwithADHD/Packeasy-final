@@ -1,9 +1,11 @@
 import { Feather } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { palette } from "@/constants/colors";
+import { useAuth } from "@/context/AuthContext";
 
 type RowProps = {
   icon: keyof typeof Feather.glyphMap;
@@ -25,6 +27,22 @@ function Row({ icon, label, onPress }: RowProps) {
 
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const { user, logout } = useAuth();
+
+  const handleLogout = () => {
+    Alert.alert("Sign out", "Are you sure you want to sign out?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Sign out",
+        style: "destructive",
+        onPress: async () => {
+          await logout();
+          router.replace("/(auth)/login");
+        },
+      },
+    ]);
+  };
 
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
@@ -53,7 +71,9 @@ export default function SettingsScreen() {
         <View>
           <Text style={styles.sectionLabel}>Account & Sync</Text>
           <View style={styles.card}>
-            <Row icon="user" label="Account Sync & Backup" />
+            <Row icon="user" label={user ? `Signed in as ${user.name}` : "Account Sync & Backup"} />
+            <View style={styles.divider} />
+            <Row icon="log-out" label="Sign out" onPress={handleLogout} />
           </View>
         </View>
 

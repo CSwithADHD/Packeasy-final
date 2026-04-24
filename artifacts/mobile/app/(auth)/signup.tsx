@@ -1,17 +1,51 @@
 import { Link, useRouter } from "expo-router";
 import React, { useState } from "react";
-import { Pressable, StyleSheet, Text } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, Text } from "react-native";
 
 import { AuthInput } from "@/components/auth/AuthInput";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { SocialRow } from "@/components/auth/SocialRow";
+import { useAuth } from "@/context/AuthContext";
 
 export default function SignupScreen() {
   const router = useRouter();
+  const { signup } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const onSubmit = async () => {
+    if (submitting) return;
+    setError(null);
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+    if (!trimmedName || !trimmedEmail || !password) {
+      setError("Please fill in your name, email, and password.");
+      return;
+    }
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+    if (password !== confirm) {
+      setError("Passwords don't match.");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await signup({ name: trimmedName, email: trimmedEmail, password });
+      router.replace("/(tabs)");
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Signup failed. Please try again.";
+      setError(extractMessage(message));
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <AuthShell
@@ -58,20 +92,38 @@ export default function SignupScreen() {
         onChangeText={setConfirm}
       />
 
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
       <Pressable
-        onPress={() => router.replace("/(tabs)")}
+        onPress={onSubmit}
+        disabled={submitting}
         style={({ pressed }) => [
           styles.primaryBtn,
-          pressed && { opacity: 0.9, transform: [{ scale: 0.99 }] },
+          (pressed || submitting) && { opacity: 0.85 },
         ]}
       >
-        <Text style={styles.primaryText}>Signup</Text>
+        {submitting ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.primaryText}>Signup</Text>
+        )}
       </Pressable>
     </AuthShell>
   );
 }
 
+function extractMessage(raw: string): string {
+  const m = raw.match(/HTTP \d+[^:]*:\s*(.+)$/);
+  return m ? m[1] : raw;
+}
+
 const styles = StyleSheet.create({
+  errorText: {
+    color: "#ffb4b4",
+    fontFamily: "Inter_500Medium",
+    fontSize: 13,
+    textAlign: "center",
+  },
   primaryBtn: {
     backgroundColor: "#22c46a",
     height: 52,
