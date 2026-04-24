@@ -20,7 +20,7 @@ export default function WelcomeScreen() {
     <View style={styles.root}>
       <StatusBar style="light" />
       <ImageBackground
-        source={require("../assets/images/bg.png")}
+        source={require("../assets/images/bg.jpg")}
         style={styles.bg}
         resizeMode="cover"
       >

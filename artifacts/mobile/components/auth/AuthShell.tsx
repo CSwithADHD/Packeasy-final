@@ -21,7 +21,7 @@ export function AuthShell({ title, children, footer }: Props) {
 
   return (
     <ImageBackground
-      source={require("../../assets/images/bg.png")}
+      source={require("../../assets/images/bg.jpg")}
       style={styles.bg}
       resizeMode="cover"
     >
