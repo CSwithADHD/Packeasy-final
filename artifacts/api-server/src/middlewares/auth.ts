@@ -40,5 +40,5 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
   if (!req.userId) {
     return res.status(401).json({ error: "unauthorized" });
   }
-  next();
+  return next();
 }

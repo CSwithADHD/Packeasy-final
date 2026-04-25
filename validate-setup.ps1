@@ -11,7 +11,8 @@ Write-Host "Checking prerequisites..." -ForegroundColor Yellow
 $nodeVersion = node --version 2>$null
 if ($nodeVersion) {
     Write-Host "✓ Node.js: $nodeVersion" -ForegroundColor Green
-} else {
+}
+else {
     Write-Host "✗ Node.js not found" -ForegroundColor Red
 }
 
@@ -19,7 +20,8 @@ if ($nodeVersion) {
 $pnpmVersion = pnpm --version 2>$null
 if ($pnpmVersion) {
     Write-Host "✓ pnpm: v$pnpmVersion" -ForegroundColor Green
-} else {
+}
+else {
     Write-Host "✗ pnpm not found" -ForegroundColor Red
 }
 
@@ -30,15 +32,17 @@ if (Test-Path ".env") {
     Write-Host "✓ .env file exists" -ForegroundColor Green
     $envContent = Get-Content .env -Raw
     if ($envContent -match "DATABASE_URL") {
-        $hasUrl = $envContent -match "DATABASE_URL=(?!$)"
+        $hasUrl = $envContent -match "DATABASE_URL=.+"
         if ($hasUrl) {
             Write-Host "✓ DATABASE_URL is set" -ForegroundColor Green
-        } else {
+        }
+        else {
             Write-Host "✗ DATABASE_URL is not configured" -ForegroundColor Red
             Write-Host "  → Please update .env with your PostgreSQL connection string" -ForegroundColor Yellow
         }
     }
-} else {
+}
+else {
     Write-Host "✗ .env file not found" -ForegroundColor Red
     Write-Host "  → Copy .env.example to .env and configure DATABASE_URL" -ForegroundColor Yellow
 }
@@ -48,7 +52,8 @@ Write-Host ""
 Write-Host "Checking dependencies..." -ForegroundColor Yellow
 if (Test-Path "node_modules") {
     Write-Host "✓ Dependencies installed" -ForegroundColor Green
-} else {
+}
+else {
     Write-Host "✗ Dependencies not installed" -ForegroundColor Red
     Write-Host "  → Run: pnpm install" -ForegroundColor Yellow
 }
@@ -59,7 +64,8 @@ Write-Host "Checking database..." -ForegroundColor Yellow
 $psqlVersion = psql --version 2>$null
 if ($psqlVersion) {
     Write-Host "✓ PostgreSQL installed: $psqlVersion" -ForegroundColor Green
-} else {
+}
+else {
     Write-Host "⚠ PostgreSQL not found locally" -ForegroundColor Yellow
     Write-Host "  → Use Supabase/Neon (cloud) or install PostgreSQL locally" -ForegroundColor Yellow
 }
@@ -78,7 +84,7 @@ Write-Host "   - Paste in .env as DATABASE_URL"
 Write-Host ""
 Write-Host "   Option B:"
 Write-Host "   - Install PostgreSQL: https://www.postgresql.org/download/windows/"
-Write-Host "   - Create database: psql -U postgres -c ""CREATE DATABASE packeasy;"""
+Write-Host "   - Create database: psql -U postgres -c `"CREATE DATABASE packeasy;`""
 Write-Host "   - Update .env with your credentials"
 Write-Host ""
 
@@ -87,11 +93,11 @@ Write-Host "   Run: pnpm --filter @workspace/db run push"
 Write-Host ""
 
 Write-Host "3. START API SERVER (Terminal 1)"
-Write-Host "   Run: cd artifacts/api-server && pnpm run dev"
+Write-Host "   Run: cd artifacts/api-server; pnpm run dev"
 Write-Host ""
 
 Write-Host "4. START MOBILE APP (Terminal 2)"
-Write-Host "   Run: cd artifacts/mobile && pnpm run dev"
+Write-Host "   Run: cd artifacts/mobile; pnpm run dev"
 Write-Host ""
 
 Write-Host "5. TEST THE API"
@@ -101,7 +107,7 @@ Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "Documentation" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "- QUICK_START.md     - Complete setup & usage guide"
+Write-Host "- QUICK_START.md     - Complete setup guide"
 Write-Host "- DATABASE_SETUP.md  - Detailed database setup"
 Write-Host "- docker-compose.yml - PostgreSQL via Docker"
 Write-Host ""

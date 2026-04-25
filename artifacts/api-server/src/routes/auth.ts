@@ -51,7 +51,7 @@ router.post("/auth/signup", async (req, res) => {
   await db.insert(usersTable).values(user);
   const session = await createSession(user.id);
 
-  res.json({
+  return res.json({
     user: publicUser(user),
     token: session.token,
     expiresAt: session.expiresAt.toISOString(),
@@ -79,7 +79,7 @@ router.post("/auth/login", async (req, res) => {
     return res.status(401).json({ error: "invalid_credentials", message: "Email or password is incorrect." });
   }
   const session = await createSession(user.id);
-  res.json({
+  return res.json({
     user: publicUser(user),
     token: session.token,
     expiresAt: session.expiresAt.toISOString(),
@@ -90,7 +90,7 @@ router.post("/auth/logout", requireAuth, async (req, res) => {
   if (req.sessionToken) {
     await deleteSession(req.sessionToken);
   }
-  res.json({ ok: true });
+  return res.json({ ok: true });
 });
 
 router.get("/auth/me", requireAuth, async (req, res) => {
@@ -101,7 +101,7 @@ router.get("/auth/me", requireAuth, async (req, res) => {
     .limit(1);
   const user = rows[0];
   if (!user) return res.status(404).json({ error: "not_found" });
-  res.json({ user: publicUser(user) });
+  return res.json({ user: publicUser(user) });
 });
 
 export default router;

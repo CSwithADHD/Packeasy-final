@@ -131,7 +131,7 @@ router.get("/trips", async (req, res) => {
     tasksByTrip.set(t.tripId, arr);
   }
 
-  res.json({
+  return res.json({
     trips: trips.map((t) => ({
       ...t,
       categories: (catsByTrip.get(t.id) ?? [])
@@ -164,20 +164,20 @@ router.post("/trips", async (req, res) => {
     await seedDefaultChecklist(id);
   }
   const full = await loadFullTrip(id, req.userId!);
-  res.json({ trip: full });
+  return res.json({ trip: full });
 });
 
 router.get("/trips/:id", async (req, res) => {
   const trip = await loadFullTrip(req.params.id, req.userId!);
   if (!trip) return res.status(404).json({ error: "not_found" });
-  res.json({ trip });
+  return res.json({ trip });
 });
 
 router.delete("/trips/:id", async (req, res) => {
   await db
     .delete(tripsTable)
     .where(and(eq(tripsTable.id, req.params.id), eq(tripsTable.userId, req.userId!)));
-  res.json({ ok: true });
+  return res.json({ ok: true });
 });
 
 router.post("/trips/:id/seed", async (req, res) => {
@@ -185,7 +185,7 @@ router.post("/trips/:id/seed", async (req, res) => {
   if (!trip) return res.status(404).json({ error: "not_found" });
   await seedDefaultChecklist(req.params.id);
   const full = await loadFullTrip(req.params.id, req.userId!);
-  res.json({ trip: full });
+  return res.json({ trip: full });
 });
 
 router.post("/trips/:id/categories", async (req, res) => {
@@ -203,7 +203,7 @@ router.post("/trips/:id/categories", async (req, res) => {
     icon: parsed.data.icon,
     position: trip.categories.length,
   });
-  res.json({ trip: await loadFullTrip(req.params.id, req.userId!) });
+  return res.json({ trip: await loadFullTrip(req.params.id, req.userId!) });
 });
 
 async function getCategoryAndAssertOwner(categoryId: string, userId: string) {
@@ -262,7 +262,7 @@ router.post("/categories/:id/items", async (req, res) => {
     label: parsed.data.label,
     position: existing.length,
   });
-  res.json({ trip: await loadFullTrip(own.trip.id, req.userId!) });
+  return res.json({ trip: await loadFullTrip(own.trip.id, req.userId!) });
 });
 
 router.patch("/items/:id", async (req, res) => {
@@ -280,14 +280,14 @@ router.patch("/items/:id", async (req, res) => {
       ...(parsed.data.label !== undefined ? { label: parsed.data.label } : {}),
     })
     .where(eq(itemsTable.id, req.params.id));
-  res.json({ trip: await loadFullTrip(own.trip.id, req.userId!) });
+  return res.json({ trip: await loadFullTrip(own.trip.id, req.userId!) });
 });
 
 router.delete("/items/:id", async (req, res) => {
   const own = await getItemAndAssertOwner(req.params.id, req.userId!);
   if (!own) return res.status(404).json({ error: "not_found" });
   await db.delete(itemsTable).where(eq(itemsTable.id, req.params.id));
-  res.json({ trip: await loadFullTrip(own.trip.id, req.userId!) });
+  return res.json({ trip: await loadFullTrip(own.trip.id, req.userId!) });
 });
 
 router.post("/trips/:id/tasks", async (req, res) => {
@@ -302,7 +302,7 @@ router.post("/trips/:id/tasks", async (req, res) => {
     tripId: req.params.id,
     label: parsed.data.label,
   });
-  res.json({ trip: await loadFullTrip(req.params.id, req.userId!) });
+  return res.json({ trip: await loadFullTrip(req.params.id, req.userId!) });
 });
 
 router.patch("/tasks/:id", async (req, res) => {
@@ -319,14 +319,14 @@ router.patch("/tasks/:id", async (req, res) => {
       ...(parsed.data.label !== undefined ? { label: parsed.data.label } : {}),
     })
     .where(eq(tasksTable.id, req.params.id));
-  res.json({ trip: await loadFullTrip(own.trip.id, req.userId!) });
+  return res.json({ trip: await loadFullTrip(own.trip.id, req.userId!) });
 });
 
 router.delete("/tasks/:id", async (req, res) => {
   const own = await getTaskAndAssertOwner(req.params.id, req.userId!);
   if (!own) return res.status(404).json({ error: "not_found" });
   await db.delete(tasksTable).where(eq(tasksTable.id, req.params.id));
-  res.json({ trip: await loadFullTrip(own.trip.id, req.userId!) });
+  return res.json({ trip: await loadFullTrip(own.trip.id, req.userId!) });
 });
 
 export default router;
