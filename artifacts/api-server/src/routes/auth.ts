@@ -74,6 +74,12 @@ router.post("/auth/login", async (req, res) => {
   if (!user) {
     return res.status(401).json({ error: "invalid_credentials", message: "Email or password is incorrect." });
   }
+  
+  // For OAuth users without password, deny password-based login
+  if (!user.passwordHash) {
+    return res.status(401).json({ error: "oauth_account", message: "This account uses social login. Please login with your social provider." });
+  }
+  
   const ok = await verifyPassword(password, user.passwordHash);
   if (!ok) {
     return res.status(401).json({ error: "invalid_credentials", message: "Email or password is incorrect." });

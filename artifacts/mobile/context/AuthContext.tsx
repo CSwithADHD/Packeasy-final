@@ -12,6 +12,7 @@ import React, {
 
 import { api } from "@/lib/api";
 import { authStorage, type StoredUser } from "@/lib/auth-storage";
+import { useOAuth, type OAuthProvider } from "@/lib/oauth";
 
 const DOMAIN = process.env.EXPO_PUBLIC_DOMAIN;
 const API_BASE = DOMAIN ? `https://${DOMAIN}` : "";
@@ -24,6 +25,7 @@ type AuthState = {
   loading: boolean;
   signup: (input: { name: string; email: string; password: string }) => Promise<void>;
   login: (input: { email: string; password: string }) => Promise<void>;
+  oauthLogin: (provider: OAuthProvider) => Promise<void>;
   logout: () => Promise<void>;
 };
 
@@ -31,6 +33,7 @@ const AuthContext = createContext<AuthState | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
+  const { handleOAuthLogin } = useOAuth();
   const [user, setUser] = useState<StoredUser | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -95,6 +98,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [persistAuth],
   );
 
+  const oauthLogin = useCallback<AuthState["oauthLogin"]>(
+    async (provider) => {
+      const res = await handleOAuthLogin(provider);
+      await persistAuth(res.user, res.token);
+    },
+    [persistAuth, handleOAuthLogin],
+  );
+
   const logout = useCallback<AuthState["logout"]>(async () => {
     try {
       if (tokenRef.current) await api.logout();
@@ -109,8 +120,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [queryClient]);
 
   const value = useMemo<AuthState>(
-    () => ({ user, token, loading, signup, login, logout }),
-    [user, token, loading, signup, login, logout],
+    () => ({ user, token, loading, signup, login, oauthLogin, logout }),
+    [user, token, loading, signup, login, oauthLogin, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

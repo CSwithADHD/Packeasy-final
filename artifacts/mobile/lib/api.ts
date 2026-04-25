@@ -67,6 +67,7 @@ function del<T>(path: string) {
 }
 
 export const api = {
+  customFetch,
   signup(input: { name: string; email: string; password: string }) {
     return postJson<AuthResponse>("/api/auth/signup", input);
   },
@@ -75,6 +76,9 @@ export const api = {
   },
   logout() {
     return postJson<{ ok: true }>("/api/auth/logout", {});
+  },
+  oauthExchange(input: { provider: string; code: string; state?: string }) {
+    return postJson<AuthResponse>("/api/oauth/token", input);
   },
   me() {
     return customFetch<{ user: StoredUser }>("/api/auth/me", {

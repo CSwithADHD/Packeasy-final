@@ -9,7 +9,7 @@ import { useAuth } from "@/context/AuthContext";
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, oauthLogin } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(true);
@@ -37,12 +37,23 @@ export default function LoginScreen() {
     }
   };
 
+  const handleOAuthLogin = async (provider: "google" | "apple" | "facebook") => {
+    try {
+      await oauthLogin(provider);
+      router.replace("/(tabs)");
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : `${provider} login failed.`;
+      setError(extractMessage(message));
+    }
+  };
+
   return (
     <AuthShell
       title="Login"
       footer={
         <>
-          <SocialRow label="Or login with" />
+          <SocialRow label="Or login with" onOAuthPress={handleOAuthLogin} />
           <Text style={styles.bottomText}>
             Don&apos;t have an account?{" "}
             <Link href="/(auth)/signup" style={styles.bottomLink}>
