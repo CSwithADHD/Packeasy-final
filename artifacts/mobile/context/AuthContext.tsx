@@ -15,9 +15,10 @@ import { authStorage, type StoredUser } from "@/lib/auth-storage";
 import { useOAuth, type OAuthProvider } from "@/lib/oauth";
 
 const DOMAIN = process.env.EXPO_PUBLIC_DOMAIN;
-const API_BASE = DOMAIN ? `https://${DOMAIN}` : "";
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
+const API_BASE = DOMAIN ? `https://${DOMAIN}` : API_URL || "http://localhost:3000";
 
-setBaseUrl(API_BASE || null);
+setBaseUrl(API_BASE);
 
 type AuthState = {
   user: StoredUser | null;
