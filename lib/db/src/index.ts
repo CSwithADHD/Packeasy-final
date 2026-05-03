@@ -1,13 +1,6 @@
-import { config } from "dotenv";
-import path from "path";
-import { fileURLToPath } from "url";
 import { drizzle } from "drizzle-orm/node-postgres";
 import pg from "pg";
 import * as schema from "./schema";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const envPath = path.resolve(__dirname, "../../../.env");
-config({ path: envPath });
 
 const { Pool } = pg;
 

@@ -4,6 +4,7 @@ import { Router, type IRouter } from "express";
 import { z } from "zod";
 
 import { newId } from "../lib/ids";
+import { DEMO_SESSION_TOKEN, DEMO_USER, isDemoCredentials } from "../lib/demo";
 import { hashPassword, verifyPassword } from "../lib/passwords";
 import { createSession, deleteSession } from "../lib/sessions";
 import { requireAuth } from "../middlewares/auth";
@@ -31,6 +32,14 @@ router.post("/auth/signup", async (req, res) => {
     return res.status(400).json({ error: "invalid_input", details: parsed.error.flatten() });
   }
   const { name, email, password } = parsed.data;
+
+  if (isDemoCredentials(email, password)) {
+    return res.json({
+      user: DEMO_USER,
+      token: DEMO_SESSION_TOKEN,
+      expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(),
+    });
+  }
 
   const existing = await db
     .select({ id: usersTable.id })
@@ -65,6 +74,14 @@ router.post("/auth/login", async (req, res) => {
   }
   const { email, password } = parsed.data;
 
+  if (isDemoCredentials(email, password)) {
+    return res.json({
+      user: DEMO_USER,
+      token: DEMO_SESSION_TOKEN,
+      expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(),
+    });
+  }
+
   const rows = await db
     .select()
     .from(usersTable)
@@ -93,6 +110,10 @@ router.post("/auth/login", async (req, res) => {
 });
 
 router.post("/auth/logout", requireAuth, async (req, res) => {
+  if (req.userId === DEMO_USER.id) {
+    return res.json({ ok: true });
+  }
+
   if (req.sessionToken) {
     await deleteSession(req.sessionToken);
   }
@@ -100,6 +121,10 @@ router.post("/auth/logout", requireAuth, async (req, res) => {
 });
 
 router.get("/auth/me", requireAuth, async (req, res) => {
+  if (req.userId === DEMO_USER.id) {
+    return res.json({ user: DEMO_USER });
+  }
+
   const rows = await db
     .select()
     .from(usersTable)

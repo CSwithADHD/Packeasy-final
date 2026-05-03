@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 
+import { DEMO_SESSION_TOKEN, DEMO_USER, isDemoSessionToken } from "../lib/demo";
 import { findSession } from "../lib/sessions";
 
 declare global {
@@ -27,6 +28,12 @@ export async function attachUser(
 ) {
   const token = extractToken(req);
   if (token) {
+    if (isDemoSessionToken(token)) {
+      req.userId = DEMO_USER.id;
+      req.sessionToken = DEMO_SESSION_TOKEN;
+      return next();
+    }
+
     const found = await findSession(token);
     if (found) {
       req.userId = found.user.id;

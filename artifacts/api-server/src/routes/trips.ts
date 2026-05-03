@@ -10,6 +10,7 @@ import { Router, type IRouter } from "express";
 import { z } from "zod";
 
 import { newId } from "../lib/ids";
+import { DEMO_USER } from "../lib/demo";
 import { seedDefaultChecklist } from "../lib/seed";
 import { requireAuth } from "../middlewares/auth";
 
@@ -93,6 +94,10 @@ async function loadFullTrip(tripId: string, userId: string) {
 }
 
 router.get("/trips", async (req, res) => {
+  if (req.userId === DEMO_USER.id) {
+    return res.json({ trips: [] });
+  }
+
   const trips = await db
     .select()
     .from(tripsTable)
@@ -148,6 +153,13 @@ router.get("/trips", async (req, res) => {
 });
 
 router.post("/trips", async (req, res) => {
+  if (req.userId === DEMO_USER.id) {
+    return res.status(501).json({
+      error: "demo_mode",
+      message: "Trip creation is disabled in demo mode.",
+    });
+  }
+
   const parsed = createTripSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: "invalid_input", details: parsed.error.flatten() });
@@ -168,12 +180,20 @@ router.post("/trips", async (req, res) => {
 });
 
 router.get("/trips/:id", async (req, res) => {
+  if (req.userId === DEMO_USER.id) {
+    return res.status(404).json({ error: "not_found" });
+  }
+
   const trip = await loadFullTrip(req.params.id, req.userId!);
   if (!trip) return res.status(404).json({ error: "not_found" });
   return res.json({ trip });
 });
 
 router.delete("/trips/:id", async (req, res) => {
+  if (req.userId === DEMO_USER.id) {
+    return res.json({ ok: true });
+  }
+
   await db
     .delete(tripsTable)
     .where(and(eq(tripsTable.id, req.params.id), eq(tripsTable.userId, req.userId!)));
@@ -181,6 +201,13 @@ router.delete("/trips/:id", async (req, res) => {
 });
 
 router.post("/trips/:id/seed", async (req, res) => {
+  if (req.userId === DEMO_USER.id) {
+    return res.status(501).json({
+      error: "demo_mode",
+      message: "Seed is disabled in demo mode.",
+    });
+  }
+
   const trip = await loadFullTrip(req.params.id, req.userId!);
   if (!trip) return res.status(404).json({ error: "not_found" });
   await seedDefaultChecklist(req.params.id);
@@ -189,6 +216,13 @@ router.post("/trips/:id/seed", async (req, res) => {
 });
 
 router.post("/trips/:id/categories", async (req, res) => {
+  if (req.userId === DEMO_USER.id) {
+    return res.status(501).json({
+      error: "demo_mode",
+      message: "Category creation is disabled in demo mode.",
+    });
+  }
+
   const parsed = addCategorySchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: "invalid_input", details: parsed.error.flatten() });
@@ -244,6 +278,13 @@ async function getTaskAndAssertOwner(taskId: string, userId: string) {
 }
 
 router.post("/categories/:id/items", async (req, res) => {
+  if (req.userId === DEMO_USER.id) {
+    return res.status(501).json({
+      error: "demo_mode",
+      message: "Item creation is disabled in demo mode.",
+    });
+  }
+
   const parsed = addItemSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: "invalid_input", details: parsed.error.flatten() });
@@ -266,6 +307,13 @@ router.post("/categories/:id/items", async (req, res) => {
 });
 
 router.patch("/items/:id", async (req, res) => {
+  if (req.userId === DEMO_USER.id) {
+    return res.status(501).json({
+      error: "demo_mode",
+      message: "Item updates are disabled in demo mode.",
+    });
+  }
+
   const parsed = patchItemSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: "invalid_input", details: parsed.error.flatten() });
@@ -284,6 +332,10 @@ router.patch("/items/:id", async (req, res) => {
 });
 
 router.delete("/items/:id", async (req, res) => {
+  if (req.userId === DEMO_USER.id) {
+    return res.json({ ok: true });
+  }
+
   const own = await getItemAndAssertOwner(req.params.id, req.userId!);
   if (!own) return res.status(404).json({ error: "not_found" });
   await db.delete(itemsTable).where(eq(itemsTable.id, req.params.id));
@@ -291,6 +343,13 @@ router.delete("/items/:id", async (req, res) => {
 });
 
 router.post("/trips/:id/tasks", async (req, res) => {
+  if (req.userId === DEMO_USER.id) {
+    return res.status(501).json({
+      error: "demo_mode",
+      message: "Task creation is disabled in demo mode.",
+    });
+  }
+
   const parsed = addTaskSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: "invalid_input", details: parsed.error.flatten() });
@@ -306,6 +365,13 @@ router.post("/trips/:id/tasks", async (req, res) => {
 });
 
 router.patch("/tasks/:id", async (req, res) => {
+  if (req.userId === DEMO_USER.id) {
+    return res.status(501).json({
+      error: "demo_mode",
+      message: "Task updates are disabled in demo mode.",
+    });
+  }
+
   const parsed = patchTaskSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: "invalid_input", details: parsed.error.flatten() });
@@ -323,6 +389,10 @@ router.patch("/tasks/:id", async (req, res) => {
 });
 
 router.delete("/tasks/:id", async (req, res) => {
+  if (req.userId === DEMO_USER.id) {
+    return res.json({ ok: true });
+  }
+
   const own = await getTaskAndAssertOwner(req.params.id, req.userId!);
   if (!own) return res.status(404).json({ error: "not_found" });
   await db.delete(tasksTable).where(eq(tasksTable.id, req.params.id));

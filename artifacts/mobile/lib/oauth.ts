@@ -2,6 +2,7 @@ import * as WebBrowser from "expo-web-browser";
 import React, { useCallback } from "react";
 
 import { api } from "@/lib/api";
+import type { AuthResponse } from "@/lib/api";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -20,7 +21,7 @@ export async function exchangeOAuthCode(
   provider: OAuthProvider,
   code: string,
   state?: string,
-) {
+): Promise<AuthResponse> {
   return api.oauthExchange({
     provider,
     code,
@@ -29,7 +30,7 @@ export async function exchangeOAuthCode(
 }
 
 export function useOAuth() {
-  const handleOAuthLogin = useCallback(async (provider: OAuthProvider) => {
+  const handleOAuthLogin = useCallback(async (provider: OAuthProvider): Promise<AuthResponse> => {
     try {
       const authUrl = await getOAuthURL(provider);
       const result = await WebBrowser.openAuthSessionAsync(authUrl, "packeasy://oauth-callback");
@@ -50,6 +51,7 @@ export function useOAuth() {
       } else if (result.type === "dismiss") {
         throw new Error("OAuth login dismissed");
       }
+      throw new Error("OAuth login did not complete");
     } catch (error) {
       throw error;
     }

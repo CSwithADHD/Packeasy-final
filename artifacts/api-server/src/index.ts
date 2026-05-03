@@ -1,5 +1,14 @@
-import app from "./app";
+import { config } from "dotenv";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
 import { logger } from "./lib/logger";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const envPath = path.resolve(__dirname, "../../../.env");
+config({ path: envPath });
+
+const { default: app } = await import("./app");
 
 const rawPort = process.env["PORT"];
 

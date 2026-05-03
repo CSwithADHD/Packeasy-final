@@ -1,4 +1,5 @@
-import { db, oauthProvidersTable, usersTable } from "@workspace/db";
+import { db } from "@workspace/db";
+import { oauthProvidersTable, usersTable } from "@workspace/db/schema";
 import { eq, and } from "drizzle-orm";
 import { Router, type IRouter, type Request, type Response } from "express";
 import { z } from "zod";
@@ -22,6 +23,7 @@ const OAUTH_CONFIG = {
   },
   apple: {
     clientId: process.env.APPLE_CLIENT_ID || "",
+    clientSecret: process.env.APPLE_CLIENT_SECRET || "",
     teamId: process.env.APPLE_TEAM_ID || "",
     keyId: process.env.APPLE_KEY_ID || "",
     privateKey: process.env.APPLE_PRIVATE_KEY || "",
@@ -81,7 +83,7 @@ async function createOrUpdateOAuthUser(
       id: userId,
       email,
       name,
-      passwordHash: null, // OAuth users don't have password hash
+      passwordHash: await hashOAuthPassword(userId),
     });
   }
 
@@ -238,7 +240,11 @@ async function exchangeGoogleCode(code: string) {
     throw new Error("Google token exchange failed");
   }
 
-  const tokenData = await response.json();
+  const tokenData = (await response.json()) as {
+    access_token: string;
+    refresh_token?: string;
+    expires_in?: number;
+  };
   const userResponse = await fetch("https://openidconnect.googleapis.com/v1/userinfo", {
     headers: { Authorization: `Bearer ${tokenData.access_token}` },
   });
@@ -247,7 +253,11 @@ async function exchangeGoogleCode(code: string) {
     throw new Error("Google user info fetch failed");
   }
 
-  const userData = await userResponse.json();
+  const userData = (await userResponse.json()) as {
+    sub: string;
+    email: string;
+    name?: string;
+  };
   return {
     id: userData.sub,
     email: userData.email,
@@ -259,7 +269,7 @@ async function exchangeGoogleCode(code: string) {
 }
 
 async function exchangeFacebookCode(code: string) {
-  const response = await fetch("https://graph.instagram.com/v18.0/oauth/access_token", {
+  const response = await fetch("https://graph.facebook.com/v18.0/oauth/access_token", {
     method: "POST",
     body: new URLSearchParams({
       code,
@@ -273,16 +283,24 @@ async function exchangeFacebookCode(code: string) {
     throw new Error("Facebook token exchange failed");
   }
 
-  const tokenData = await response.json();
+  const tokenData = (await response.json()) as {
+    access_token: string;
+    refresh_token?: string;
+    expires_in?: number;
+  };
   const userResponse = await fetch(
-    `https://graph.instagram.com/v18.0/me?fields=id,name,email&access_token=${tokenData.access_token}`,
+    `https://graph.facebook.com/me?fields=id,name,email&access_token=${tokenData.access_token}`,
   );
 
   if (!userResponse.ok) {
     throw new Error("Facebook user info fetch failed");
   }
 
-  const userData = await userResponse.json();
+  const userData = (await userResponse.json()) as {
+    id: string;
+    email?: string;
+    name?: string;
+  };
   return {
     id: userData.id,
     email: userData.email || "",
@@ -309,10 +327,17 @@ async function exchangeAppleCode(code: string) {
     throw new Error("Apple token exchange failed");
   }
 
-  const tokenData = await response.json();
+  const tokenData = (await response.json()) as {
+    access_token: string;
+    refresh_token?: string;
+    id_token: string;
+  };
   // Decode ID token (JWT) - simplified version, should validate signature in production
   const idTokenParts = tokenData.id_token.split(".");
-  const payload = JSON.parse(Buffer.from(idTokenParts[1], "base64").toString());
+  const payload = JSON.parse(Buffer.from(idTokenParts[1], "base64").toString()) as {
+    sub: string;
+    email?: string;
+  };
 
   return {
     id: payload.sub,
@@ -321,6 +346,10 @@ async function exchangeAppleCode(code: string) {
     accessToken: tokenData.access_token,
     refreshToken: tokenData.refresh_token,
   };
+}
+
+async function hashOAuthPassword(userId: string) {
+  return `oauth-${userId}-${newId()}`;
 }
 
 export default router;

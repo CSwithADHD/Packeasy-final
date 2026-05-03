@@ -39,6 +39,16 @@ EXPO_PUBLIC_API_URL=http://localhost:3000
 NODE_ENV=development
 ```
 
+### 2a. Demo Login for Local Development
+If you just want to run the app and sign in without setting up PostgreSQL, use:
+
+```text
+Email: demo@packeasy.local
+Password: password123
+```
+
+These demo credentials work in development mode and return a fake session so you can get into the app right away.
+
 ### 3. Initialize Database Schema
 ```bash
 pnpm --filter @workspace/db run push

@@ -8,9 +8,8 @@ import tripsRouter from "./trips";
 
 const router: IRouter = Router();
 
-router.use(attachUser);
-
 router.use(healthRouter);
+router.use(attachUser);
 router.use(authRouter);
 router.use(oauthRouter);
 router.use(tripsRouter);

@@ -1,4 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
+import Constants from "expo-constants";
 import { setAuthTokenGetter, setBaseUrl } from "@workspace/api-client-react";
 import React, {
   createContext,
@@ -16,7 +17,26 @@ import { useOAuth, type OAuthProvider } from "@/lib/oauth";
 
 const DOMAIN = process.env.EXPO_PUBLIC_DOMAIN;
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
-const API_BASE = DOMAIN ? `https://${DOMAIN}` : API_URL || "http://localhost:3000";
+
+function getLocalApiBaseUrl() {
+  if (DOMAIN) return `https://${DOMAIN}`;
+  if (API_URL) return API_URL;
+
+  const hostUri =
+    Constants.expoConfig?.hostUri ??
+    Constants.manifest?.debuggerHost ??
+    Constants.manifest2?.extra?.expoClient?.hostUri ??
+    Constants.manifest2?.extra?.expoGo?.debuggerHost;
+
+  if (hostUri) {
+    const host = hostUri.replace(/^(?:https?|exp):\/\//, "").split("/")[0].split(":")[0];
+    if (host) return `http://${host}:3000`;
+  }
+
+  return "http://localhost:3000";
+}
+
+const API_BASE = getLocalApiBaseUrl();
 
 setBaseUrl(API_BASE);
 
